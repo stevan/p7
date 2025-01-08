@@ -5,6 +5,7 @@ use experimental qw[ class ];
 use module qw[ org::p7::util::stream ];
 
 use org::p7::util::function qw[
+    BiFunction
     Consumer
     Function
     Predicate
