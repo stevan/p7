@@ -4,10 +4,12 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::io::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class IO::Stream::Source::LinesFromHandle :isa(Stream::Source) {
     field $fh :param :reader;
 
-    method next { scalar $fh->getline }
+    method next { LOG $self if DEBUG; scalar $fh->getline }
 
-    method has_next { !$fh->eof }
+    method has_next { LOG $self if DEBUG; !$fh->eof }
 }

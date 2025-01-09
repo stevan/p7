@@ -44,6 +44,7 @@ my sub colorize_by_depth ($depth, $string) {
 }
 
 my sub decorate ($msg) {
+    $msg =~ s/\n/\\n/g;
     $msg =~ s/([A-Z][A-Za-z::]+)\=OBJECT\(0x([0-9a-f]+)\)/colorize($1.'['.$2.']')/ge;
     $msg =~ s/([A-Z][A-Za-z]+\:\:)\s/colorize($1) /ge;
     $msg =~ s/m\<([A-Za-z0-9,\@\(\)]+)\>/'m<'.colorize($1).'>'/ge;

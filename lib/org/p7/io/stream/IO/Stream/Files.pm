@@ -5,6 +5,7 @@ use experimental qw[ class ];
 use module qw[ org::p7::io::stream ];
 
 use org::p7::util::stream qw[ Stream ];
+use org::p7::core::util   qw[ Logger ];
 
 use Path::Tiny ();
 
@@ -12,7 +13,9 @@ use IO::Stream::Source::BytesFromHandle;
 use IO::Stream::Source::LinesFromHandle;
 
 class IO::Stream::Files {
-    sub bytes ($, $fh, %opts) {
+    sub bytes ($class, $fh, %opts) {
+        LOG $class, { fh => $fh, opts => \%opts } if DEBUG;
+
         $fh = Path::Tiny::path($fh)->openr
             unless blessed $fh
                 || ref $fh eq 'GLOB';
@@ -22,7 +25,9 @@ class IO::Stream::Files {
         )
     }
 
-    sub lines ($, $fh, %opts) {
+    sub lines ($class, $fh, %opts) {
+        LOG $class, { fh => $fh, opts => \%opts } if DEBUG;
+
         $fh = Path::Tiny::path($fh)->openr
             unless blessed $fh
                 || ref $fh eq 'GLOB';
