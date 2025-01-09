@@ -4,10 +4,16 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Operation::Map :isa(Stream::Operation::Node) {
     field $source :param;
     field $mapper :param;
 
-    method next { $mapper->apply( $source->next ) }
-    method has_next { $source->has_next }
+    ADJUST {
+        LOG $self, 'ADJUST', { source => $source, mapper => $mapper } if DEBUG;
+    }
+
+    method next     { LOG $self if DEBUG; $mapper->apply( $source->next ) }
+    method has_next { LOG $self if DEBUG; $source->has_next }
 }

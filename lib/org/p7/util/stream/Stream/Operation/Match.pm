@@ -4,13 +4,21 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Operation::Match :isa(Stream::Operation::Terminal) {
     field $matcher  :param :reader;
     field $source   :param :reader;
 
+    ADJUST {
+        LOG $self, 'ADJUST', { source => $source, matcher => $matcher } if DEBUG;
+    }
+
     method apply {
+        LOG $self if DEBUG;
         my $current = $matcher;
         while ($source->has_next) {
+            TICK $self if DEBUG;
             my $op = $source->next;
 
             if ($current->is_match($op)) {

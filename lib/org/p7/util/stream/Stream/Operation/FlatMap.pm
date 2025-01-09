@@ -4,6 +4,8 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Operation::FlatMap :isa(Stream::Operation::Node) {
     field $source :param :reader;
     field $mapper :param :reader;
@@ -11,9 +13,14 @@ class Stream::Operation::FlatMap :isa(Stream::Operation::Node) {
     field $current;
     field $next;
 
-    method next { $next }
+    ADJUST {
+        LOG $self, 'ADJUST', { source => $source, mapper => $mapper } if DEBUG;
+    }
+
+    method next { LOG $self if DEBUG; $next }
 
     method has_next {
+        LOG $self if DEBUG;
         #say "-> calling has_next ...";
         $self->_populate_current
             or return false

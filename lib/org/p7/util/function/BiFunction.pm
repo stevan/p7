@@ -4,12 +4,14 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::function ];
 
+use org::p7::core::util qw[ Logger ];
+
 use Function;
 
 class BiFunction {
     field $f :param :reader;
 
-    method apply ($t, $u) { return $f->($t, $u); }
+    method apply ($t, $u) { LOG $self, { t => $t, u => $u } if DEBUG; return $f->($t, $u); }
 
     method curry    ($t) { Function ->new( f => sub ($u)     { return $f->($t, $u) } ) }
     method rcurry   ($u) { Function ->new( f => sub ($t)     { return $f->($t, $u) } ) }

@@ -11,22 +11,26 @@ class module {
         if ($module ne __PACKAGE__) {
             my $mod_path = $module =~ s/\:\:/\//gr;
             foreach my $to_load ( @to_load ) {
-
                 my $class_path = $to_load =~ s/\:\:/\//gr;
                 $class_path .= '.pm';
                 #warn ">>> modpath($mod_path) classpath($class_path)";
-
-                next if $INC{$class_path};
-                #warn ">>> classpath($class_path) is not in INC";
-
-                next if $INC{join '/' => $mod_path, $class_path};
-                #warn ">>> modpath($mod_path) + classpath($class_path) is not in INC";
-
+                if (exists $INC{$class_path} || exists $INC{join '/' => $mod_path, $class_path}){
+                    #warn ">>> modpath($mod_path) +| classpath($class_path) is not in INC";
+                    $to_load->import() if $to_load->can('import');
+                    next;
+                }
                 my $resolved = $module->resolve( $to_load );
                 #warn "$module ... resolved($resolved)";
                 unless (exists $modules_loaded{ $resolved }) {
                     #warn "$module loading resolved($resolved)";
                     load_module( $resolved );
+                    # XXX:
+                    # this might not always work because
+                    # it should probably re-fire on each
+                    # import, but we are only doing it once
+                    if ($to_load->can('import')) {
+                        $to_load->import();
+                    }
                     $modules_loaded{ $resolved }++;
                 }
                 else {

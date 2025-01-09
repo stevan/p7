@@ -4,10 +4,16 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Source::FromArray :isa(Stream::Source) {
     field $array :param :reader;
     field $index = 0;
 
-    method     next { $array->[$index++]  }
-    method has_next { $index < scalar $array->@* }
+    ADJUST {
+        LOG $self, 'ADJUST', { array => $array } if DEBUG;
+    }
+
+    method     next { LOG $self if DEBUG; $array->[$index++]  }
+    method has_next { LOG $self if DEBUG; $index < scalar $array->@* }
 }

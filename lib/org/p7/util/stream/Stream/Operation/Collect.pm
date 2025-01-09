@@ -4,18 +4,24 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Operation::Collect :isa(Stream::Operation::Terminal) {
     field $source      :param;
     field $accumulator :param;
 
+    ADJUST {
+        LOG $self, 'ADJUST', { source => $source, accumulator => $accumulator } if DEBUG;
+    }
+
     method apply {
-        #say "applying Collect ...";
+        LOG $self if DEBUG;
         while ($source->has_next) {
+            TICK $self if DEBUG;
             my $next = $source->next;
             #say "Calling accumulator apply on $next";
             $accumulator->accept($next);
         }
-        #say "Got all results ....";
         return $accumulator->result;
     }
 }

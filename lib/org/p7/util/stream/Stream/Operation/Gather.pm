@@ -4,6 +4,8 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Operation::Gather :isa(Stream::Operation::Node) {
     field $source :param;
     field $init   :param;
@@ -13,11 +15,15 @@ class Stream::Operation::Gather :isa(Stream::Operation::Node) {
     field $acc;
     field $next;
 
-    ADJUST { $acc = $init->get }
+    ADJUST {
+        $acc = $init->get;
+        LOG $self, 'ADJUST', { source => $source, init => $init, reduce => $reduce, finish => $finish } if DEBUG;
+    }
 
-    method next { $finish ? $finish->apply($next) : $next }
+    method next { LOG $self if DEBUG; $finish ? $finish->apply($next) : $next }
 
     method has_next {
+        LOG $self if DEBUG;
         $next = undef;
 
         my $seen = 0;

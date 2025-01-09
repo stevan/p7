@@ -4,6 +4,8 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Match {
     field $predicate :param :reader;
 
@@ -16,6 +18,7 @@ class Stream::Match {
     method set_next ($n) { $next = $n }
 
     method has_next {
+        LOG $self if DEBUG;
         # if we dont have a next, then we
         # can't have a next
         return false unless defined $next;
@@ -31,6 +34,7 @@ class Stream::Match {
     }
 
     method next {
+        LOG $self if DEBUG;
         if ($was_skipped) {
             # if we were skipped, and this
             # next is retrieved, then we
@@ -47,11 +51,12 @@ class Stream::Match {
         return $next;
     }
 
-    method match_found ($op) { $on_match ? $on_match->apply($op) : $op }
+    method match_found ($op) { LOG $self if DEBUG; $on_match ? $on_match->apply($op) : $op }
 
-    method matches ($op) { $predicate->($op) }
+    method matches ($op) { LOG $self if DEBUG; $predicate->($op) }
 
     method is_match ($op) {
+        LOG $self if DEBUG;
         #say "??? Checking ".$op->name." for match";
         return true  if $self->matches($op);
         #say "??? Did not match immediate, looking for next";

@@ -4,6 +4,8 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Operation::Every :isa(Stream::Operation::Node) {
     field $source :param :reader;
     field $stride :param :reader;
@@ -11,7 +13,12 @@ class Stream::Operation::Every :isa(Stream::Operation::Node) {
 
     field $seen = -1;
 
+    ADJUST {
+        LOG $self, 'ADJUST', { source => $source, stride => $stride, event => $event } if DEBUG;
+    }
+
     method next {
+        LOG $self if DEBUG;
         my $next = $source->next;
         if (++$seen >= $stride) {
             $event->accept($next);
@@ -20,5 +27,5 @@ class Stream::Operation::Every :isa(Stream::Operation::Node) {
         return $next;
     }
 
-    method has_next { $source->has_next }
+    method has_next { LOG $self if DEBUG; $source->has_next }
 }

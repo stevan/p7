@@ -4,6 +4,8 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Operation::Recurse :isa(Stream::Operation::Node) {
     field $source      :param :reader;
     field $can_recurse :param :reader;
@@ -14,11 +16,14 @@ class Stream::Operation::Recurse :isa(Stream::Operation::Node) {
 
     ADJUST {
         push @stack => $source;
+
+        LOG $self, 'ADJUST', { source => $source, can_recurse => $can_recurse, recurse => $recurse } if DEBUG;
     }
 
-    method next { $next }
+    method next { LOG $self if DEBUG; $next }
 
     method has_next {
+        LOG $self if DEBUG;
         while (@stack) {
             if ($stack[-1]->has_next) {
                 my $candidate = $stack[-1]->next;

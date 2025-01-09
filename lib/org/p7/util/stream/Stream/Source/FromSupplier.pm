@@ -4,9 +4,15 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Source::FromSupplier :isa(Stream::Source) {
     field $supplier :param :reader;
 
-    method next { $supplier->get }
-    method has_next { true }
+    ADJUST {
+        LOG $self, 'ADJUST', { supplier => $supplier } if DEBUG;
+    }
+
+    method next { LOG $self if DEBUG; $supplier->get }
+    method has_next { LOG $self if DEBUG; true }
 }

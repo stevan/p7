@@ -4,13 +4,22 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 class Stream::Operation::Grep :isa(Stream::Operation::Node) {
     field $source    :param;
     field $predicate :param;
 
-    field $next :reader;
+    field $next;
+
+    ADJUST {
+        LOG $self, 'ADJUST', { source => $source, predicate => $predicate } if DEBUG;
+    }
+
+    method next { LOG $self if DEBUG; $next }
 
     method has_next {
+        LOG $self if DEBUG;
         return false unless $source->has_next;
         $next = $source->next;
         until ($predicate->test($next)) {

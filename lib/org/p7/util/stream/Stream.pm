@@ -1,8 +1,10 @@
 
 use v5.40;
-use experimental qw[ class ];
+use experimental qw[ class defer ];
 
 use module qw[ org::p7::util::stream ];
+
+use org::p7::core::util qw[ Logger ];
 
 use org::p7::util::function qw[
     BiFunction
@@ -48,6 +50,10 @@ class Stream {
     field $on_open;
     field $on_close;
 
+    ADJUST {
+        LOG $self, 'ADJUST', { source => $source, prev => $prev } if DEBUG;
+    }
+
     ## -------------------------------------------------------------------------
 
     method is_head { not defined $prev }
@@ -57,15 +63,25 @@ class Stream {
     method has_on_open  { defined $on_open  }
     method has_on_close { defined $on_close }
 
-    method call_on_open  { $on_open ->accept( $self ) }
-    method call_on_close { $on_close->accept( $self ) }
+    method call_on_open  {
+        LOG $self, { on_open => $on_open } if DEBUG;
+        $on_open ->accept( $self );
+        return;
+    }
+    method call_on_close {
+        LOG $self, { on_close => $on_close } if DEBUG;
+        $on_close->accept( $self );
+        return;
+    }
 
     method on_open  ($f) {
         $on_open = blessed $f ? $f : Consumer->new( f => $f );
+        LOG $self, { on_open => $on_open } if DEBUG;
         return $self;
     }
     method on_close ($f) {
         $on_close = blessed $f ? $f : Consumer->new( f => $f );
+        LOG $self, { on_close => $on_close } if DEBUG;
         return $self;
     }
 
@@ -76,6 +92,8 @@ class Stream {
     # ->of( @list )
     # ->of( [ @list ] )
     sub of ($class, @list) {
+        LOG $class if DEBUG;
+
         @list = $list[0]->@*
             if scalar @list == 1 && ref $list[0] eq 'ARRAY';
         $class->new(
@@ -87,6 +105,8 @@ class Stream {
     # ->generate(sub { ... })
     # ->generate(Supplier->new)
     sub generate ($class, $f) {
+        LOG $class if DEBUG;
+
         $class->new(
             source => Stream::Source::FromSupplier->new(
                 supplier => blessed $f ? $f : Supplier->new(
@@ -100,6 +120,8 @@ class Stream {
     # ->range($start, $end)
     # ->range($start, $end, $step)
     sub range ($class, $start, $end, $step=1) {
+        LOG $class if DEBUG;
+
         $class->new(
             source => Stream::Source::FromRange->new(
                 start => $start,
@@ -116,6 +138,8 @@ class Stream {
     # ->iterate($seed, sub { ... }, sub { ... })
     # ->iterate($seed, Predicate->new, Function->new)
     sub iterate ($class, $seed, @args) {
+        LOG $class if DEBUG;
+
         my ($next, $has_next);
 
         if (scalar @args == 1) {
@@ -139,6 +163,8 @@ class Stream {
     }
 
     sub concat ($class, @sources) {
+        LOG $class if DEBUG;
+
         $class->new(
             source => Stream::Source::FromArray::OfStreams->new(
                 sources => [ map $_->source, @sources ]
@@ -151,6 +177,9 @@ class Stream {
     ## -------------------------------------------------------------------------
 
     my sub execute ($self, $terminal) {
+        DIV ' ▶ execute ' if DEBUG;
+        defer { DIV ' ◀ execute ' if DEBUG; }
+
         my (@open, @close);
 
         my $s = $self;
@@ -172,6 +201,7 @@ class Stream {
     }
 
     method reduce ($init, $f) {
+        LOG $self if DEBUG;
         execute($self, Stream::Operation::Reduce->new(
                 source  => $source,
                 initial => $init,
@@ -183,6 +213,7 @@ class Stream {
     }
 
     method foreach ($f) {
+        LOG $self if DEBUG;
         execute($self, Stream::Operation::ForEach->new(
                 source   => $source,
                 consumer => blessed $f ? $f : Consumer->new(
@@ -193,6 +224,7 @@ class Stream {
     }
 
     method collect ($acc) {
+        LOG $self if DEBUG;
         execute($self, Stream::Operation::Collect->new(
                 source      => $source,
                 accumulator => $acc
@@ -201,6 +233,7 @@ class Stream {
     }
 
     method match ($matcher) {
+        LOG $self if DEBUG;
         execute($self, Stream::Operation::Match->new(
                 matcher  => $source,
                 source   => $self,
@@ -213,6 +246,7 @@ class Stream {
     ## -------------------------------------------------------------------------
 
     method gather ($init, $reduce, $finish=undef) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::Gather->new(
@@ -227,6 +261,7 @@ class Stream {
     }
 
     method flatten ($f) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::Flatten->new(
@@ -239,6 +274,7 @@ class Stream {
     }
 
     method flat_map ($f) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::FlatMap->new(
@@ -251,6 +287,7 @@ class Stream {
     }
 
     method flat_map_as ($stream_class, $f) {
+        LOG $self if DEBUG;
         $stream_class->new(
             prev   => $self,
             source => Stream::Operation::FlatMap->new(
@@ -263,6 +300,7 @@ class Stream {
     }
 
     method recurse ($can_recurse, $recurse) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::Recurse->new(
@@ -275,6 +313,7 @@ class Stream {
 
 
     method every ($stride, $f) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::Every->new(
@@ -288,6 +327,7 @@ class Stream {
     }
 
     method take ($amount) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::Take->new(
@@ -298,6 +338,7 @@ class Stream {
     }
 
     method take_until ($f) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::TakeUntil->new(
@@ -310,6 +351,7 @@ class Stream {
     }
 
     method when ($predicate, $f) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::When->new(
@@ -325,6 +367,7 @@ class Stream {
     }
 
     method map ($f) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::Map->new(
@@ -337,6 +380,7 @@ class Stream {
     }
 
     method grep ($f) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::Grep->new(
@@ -349,6 +393,7 @@ class Stream {
     }
 
     method peek ($f) {
+        LOG $self if DEBUG;
         __CLASS__->new(
             prev   => $self,
             source => Stream::Operation::Peek->new(

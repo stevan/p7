@@ -4,6 +4,8 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
+use org::p7::core::util qw[ Logger ];
+
 package Stream::Collectors {
 
     sub ToList { Stream::Collectors::Accumulator->new }
@@ -20,7 +22,7 @@ class Stream::Collectors::Accumulator {
     field $finisher :param = undef;
     field @acc;
 
-    method accept ($arg) { push @acc => $arg; return; }
+    method accept ($arg) { LOG $self if DEBUG; push @acc => $arg; return; }
 
-    method result { $finisher ? $finisher->( @acc ) : @acc }
+    method result { LOG $self if DEBUG; $finisher ? $finisher->( @acc ) : @acc }
 }
