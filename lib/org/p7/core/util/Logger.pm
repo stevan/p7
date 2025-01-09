@@ -78,6 +78,18 @@ sub DIV ($label) {
     say "\e[2m",'====[', $label, ']', ('=' x $width),"\e[0m";
 }
 
+sub INFO ($msg, $params=undef) {
+    my $depth = 0;
+    1 while (caller($depth++));
+
+    say decorate format_message(
+        $depth,
+        (sprintf 'INFO(%s)' => scalar(caller())),
+        $msg,
+        $params
+    );
+}
+
 sub LOG ($from, @rest) {
     my $depth = 0;
     1 while (caller($depth++));
