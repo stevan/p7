@@ -7,8 +7,6 @@ use Test::Differences;
 
 use org::p7::util::function qw[ Consumer ];
 
-use Function;
-
 my @expected = (10, 10);
 
 my @got;

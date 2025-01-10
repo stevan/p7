@@ -8,6 +8,15 @@ class module {
         state %added_to_INC;
         state %modules_loaded;
 
+        #my ($from, $file) = caller();
+        #warn sprintf "module: %30s ( %30s ) from file: %50s \n",
+        #    $module,
+        #    (join ', ' => @to_load),
+        #    $file,
+        #;
+
+        #warn "BEFORE:\n  -",(join "\n  -" => grep !/^\//, @INC),"\n";
+
         if ($module ne __PACKAGE__) {
             my $mod_path = $module =~ s/\:\:/\//gr;
             foreach my $to_load ( @to_load ) {
@@ -54,6 +63,8 @@ class module {
                 #warn "path($INC_path) was already in INC";
             }
         }
+
+        #warn "AFTER:\n  -",(join "\n  -" => grep !/^\//, @INC),"\n";
     }
 
     sub resolve ($module, $class) {

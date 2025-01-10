@@ -39,7 +39,9 @@
     - this will push the appropriate directory onto @INC
         - FIXME: this is not ideal (see NOTE below)
             - perhaps we should add a UNITCHECK to pop the dir off of @INC?
+                - this works, but would be ugly and require a module
             - or add a CODE ref to @INC to handle loading?
+                - this requires some rethinking
 
 - any module exports MUST be exported lexically via the import() method
     - using the `builtin::export_lexically` function
