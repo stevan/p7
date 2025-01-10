@@ -4,7 +4,7 @@ use experimental qw[ class defer ];
 
 use module qw[ org::p7::util::stream ];
 
-use org::p7::core::util qw[ Logger ];
+use org::p7::core::util qw[ Logging ];
 
 use org::p7::util::function qw[
     BiFunction

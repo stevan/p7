@@ -5,9 +5,9 @@ use experimental qw[ class ];
 use module qw[ org::p7::io::stream ];
 
 use org::p7::util::stream qw[ Stream ];
-use org::p7::core::util   qw[ Logger ];
+use org::p7::core::util   qw[ Logging ];
 
-use Path::Tiny ();
+use importer 'Path::Tiny' => 'path';
 
 use IO::Stream::Source::FilesFromDirectory;
 
@@ -15,8 +15,7 @@ class IO::Stream::Directories {
     sub files ($class, $dir, %opts) {
         LOG $class, { dir => $dir, opts => \%opts } if DEBUG;
 
-        $dir = Path::Tiny::path($dir)
-            unless blessed $dir;
+        $dir = path($dir) unless blessed $dir;
 
         Stream->new(
             source => IO::Stream::Source::FilesFromDirectory->new( dir => $dir, %opts )

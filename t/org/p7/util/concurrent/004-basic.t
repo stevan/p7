@@ -8,7 +8,7 @@ use Test::Differences;
 
 use org::p7::util::concurrent qw[ Flow::Publisher Flow::Subscriber ];
 use org::p7::util::function   qw[ Consumer ];
-use org::p7::core::util       qw[ Logger ];
+use org::p7::core::util       qw[ Logging ];
 
 my @seen;
 

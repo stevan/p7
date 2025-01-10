@@ -6,7 +6,7 @@ use Test::More;
 use Test::Differences;
 
 use org::p7::util::concurrent qw[ Flow Flow::Publisher ];
-use org::p7::core::util       qw[ Logger ];
+use org::p7::core::util       qw[ Logging ];
 
 my @grepped;
 my @mapped;

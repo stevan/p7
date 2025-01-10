@@ -4,7 +4,7 @@ use experimental qw[ class ];
 
 use module qw[ org::p7::util::stream ];
 
-use org::p7::core::util qw[ Logger ];
+use org::p7::core::util qw[ Logging ];
 
 class Stream::Source::FromSupplier :isa(Stream::Source) {
     field $supplier :param :reader;

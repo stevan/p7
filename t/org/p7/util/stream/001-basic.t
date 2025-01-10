@@ -6,7 +6,7 @@ use experimental qw[ class ];
 use Test::More;
 use Test::Differences;
 
-use org::p7::util::stream qw[ Stream ];
+use org'p7'util'stream qw[ Stream ];
 
 my @expected_all        = (1 .. 16);
 my @expected_after_grep = (2, 4, 6, 8, 10, 12, 14, 16);

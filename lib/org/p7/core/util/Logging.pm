@@ -1,11 +1,11 @@
-package Logger;
+package Logging;
 
 use v5.40;
 use experimental qw[ builtin ];
 use builtin      qw[ export_lexically ];
 
-use Term::ReadKey qw[ GetTerminalSize ];
-use List::Util    qw[ min max ];
+use importer 'Term::ReadKey' => qw[ GetTerminalSize ];
+use importer 'List::Util'    => qw[ min max ];
 
 sub import {
     export_lexically(

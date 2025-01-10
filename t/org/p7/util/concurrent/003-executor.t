@@ -6,7 +6,7 @@ use Test::More;
 use Test::Differences;
 
 use org::p7::util::concurrent qw[ Flow::Executor ];
-use org::p7::core::util       qw[ Logger ];
+use org::p7::core::util       qw[ Logging ];
 
 my $exe2 = Flow::Executor->new;
 my $exe1 = Flow::Executor->new( next => $exe2 );
