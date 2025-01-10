@@ -2,6 +2,8 @@
 use v5.40;
 use experimental qw[ class ];
 
+use module qw[ org::p7::core::util ];
+
 class Exception {
     use overload '""' => 'to_string';
 

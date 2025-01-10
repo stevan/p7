@@ -11,7 +11,7 @@ package Stream::Collectors {
     sub ToList { Stream::Collectors::Accumulator->new }
 
     sub JoinWith($, $sep='') {
-        Stream::Functional::Accumulator->new(
+        Stream::Collectors::Accumulator->new(
             finisher => sub (@acc) { join $sep, @acc }
         )
     }
