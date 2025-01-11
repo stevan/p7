@@ -25,15 +25,15 @@ class Deparser::Tree::Builder :isa(Deparser::Observer) {
     }
 
     method on_next ($e) {
-        DEBUG && say sprintf '%s- %s' => ('  ' x $e->op->depth), $e->to_string;
+        DEBUG && LOG $self, sprintf '%s- %s' => ('  ' x $e->op->depth), $e->to_string;
         #return;
         return if $error || $is_completed;
 
         if (DEBUG) {
-            say '== >TREE ==============================';
-            say "GOT: $e";
-            say "-- BEFORE -----------------------------";
-            say "  - ".join "\n  - " => map $_->node, @stack;
+            LOG $self, '== >TREE ==============================';
+            LOG $self, "GOT: $e";
+            LOG $self, "-- BEFORE -----------------------------";
+            LOG $self, "  - ".join "\n  - " => map $_->node, @stack;
         }
 
         if ($e isa Deparser::Event::EnterSubroutine        ||
@@ -54,9 +54,9 @@ class Deparser::Tree::Builder :isa(Deparser::Observer) {
         }
 
         if (DEBUG) {
-            say "-- AFTER ------------------------------";
-            say "  - ".join "\n  - " => map $_->node, @stack;
-            say '== <TREE ==============================';
+            LOG $self, "-- AFTER ------------------------------";
+            LOG $self, "  - ".join "\n  - " => map $_->node, @stack;
+            LOG $self, '== <TREE ==============================';
         }
     }
 

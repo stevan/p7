@@ -19,6 +19,7 @@ class Decompiler::Source::Optree :isa(Stream::Source) {
     field $current_statement;
 
     ADJUST {
+        LOG $self, 'ADJUST', { cv => $cv } if DEBUG;
         $invisible_statement = Decompiler::Context::InvisibleStatement->new( cv => $cv );
         $current_statement   = $invisible_statement;
 
@@ -45,40 +46,40 @@ class Decompiler::Source::Optree :isa(Stream::Source) {
     ## Source methods ...
     ## ---------------------------------------------------------------------------------------------
 
-    method next { $next }
+    method next { LOG $self if DEBUG; $next }
 
     method has_next {
+        LOG $self if DEBUG;
         return false if not defined $next;
 
-        say('-' x 40) if DEBUG;
         if (!$started) {
             $started = true;
-            say "Not started yet, setting up $next" if DEBUG;
+            LOG $self, "Not started yet, setting up $next" if DEBUG;
             return true;
         }
 
         my $candidate = $next->op;
 
-        say "Processing $candidate" if DEBUG;
+        LOG $self, "Processing $candidate" if DEBUG;
         if ($next->has_descendents) {
-            say ".... $candidate has kids" if DEBUG;
+            LOG $self, ".... $candidate has kids" if DEBUG;
             push @stack => $next;
             $candidate = $candidate->first;
-            say ".... + $candidate is first kid" if DEBUG;
+            LOG $self, ".... + $candidate is first kid" if DEBUG;
         }
         else {
-            say ".... $candidate does not have kids" if DEBUG;
+            LOG $self, ".... $candidate does not have kids" if DEBUG;
             my $sibling = $candidate->sibling;
             if ($$sibling) {
-                say ".... $candidate has sibling" if DEBUG;
+                LOG $self, ".... $candidate has sibling" if DEBUG;
                 $candidate = $sibling;
-                say ".... + candidate is sibling" if DEBUG;
+                LOG $self, ".... + candidate is sibling" if DEBUG;
             }
             else {
-                say ".... $candidate does not have any more siblings" if DEBUG;
+                LOG $self, ".... $candidate does not have any more siblings" if DEBUG;
                 while (@stack) {
                     my $_next = pop @stack;
-                    say "<< back to $_next ..." if DEBUG;
+                    LOG $self, "<< back to $_next ..." if DEBUG;
                     my $sibling = $_next->op->sibling;
                     if ($$sibling) {
                         $candidate = $sibling;
@@ -87,14 +88,14 @@ class Decompiler::Source::Optree :isa(Stream::Source) {
                 }
 
                 unless (@stack) {
-                    say "..... ** We ran out of stack, so we are back to root" if DEBUG;
+                    LOG $self, "..... ** We ran out of stack, so we are back to root" if DEBUG;
                     $next    = undef;
                     $stopped = true;
                 }
             }
         }
 
-        say "!!!! next is: ".($next // '~') if DEBUG;
+        LOG $self, "!!!! next is: ".($next // '~') if DEBUG;
         return false unless $next;
 
         $current_statement = $self->_wrap_statement($candidate)

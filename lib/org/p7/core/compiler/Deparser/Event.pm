@@ -29,20 +29,10 @@ class Deparser::Event {
     method create_compliment { $self->compliment->new( op => $op ) }
 
     method to_string {
-        if (DEBUG) {
-            state %colors;
-            $colors{ $op->addr } //= [ map { int(rand(250)) } 1, 2, 3 ];
-            sprintf "\e[48;2;%d;%d;%d;m%s( %s @ %d )\e[0m" =>
-                $colors{ $op->addr }->@*,
-                $type,
-                $op->to_string,
-                $op->depth;
-        } else {
-            sprintf "%s( %s @ %d )" =>
-                $type,
-                $op->to_string,
-                $op->depth;
-        }
+        sprintf "%s( %s @ %d )" =>
+            $type,
+            $op->to_string,
+            $op->depth;
     }
 }
 

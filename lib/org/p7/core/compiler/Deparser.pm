@@ -52,22 +52,22 @@ class Deparser {
         }
 
         if (DEBUG) {
-            say '=============================================================';
-            say "-- BEFORE(statmements) --------------------------------------";
-            say join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
-            say "-- BEFORE(stack) --------------------------------------------";
-            say "  - ".join "\n  - " => @stack;
+            LOG $self, '=============================================================';
+            LOG $self, "-- BEFORE(statmements) --------------------------------------";
+            LOG $self, join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
+            LOG $self, "-- BEFORE(stack) --------------------------------------------";
+            LOG $self, "  - ".join "\n  - " => @stack;
         }
 
         $tree_builder->on_next($_)
             foreach $self->unwind_events( $self->flush_stack );
 
         if (DEBUG) {
-            say "-- AFTER(statmements) ---------------------------------------";
-            say join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
-            say "-- AFTER(stack) ---------------------------------------------";
-            say "  - ".join "\n  - " => @stack;
-            say '=============================================================';
+            LOG $self, "-- AFTER(statmements) ---------------------------------------";
+            LOG $self, join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
+            LOG $self, "-- AFTER(stack) ---------------------------------------------";
+            LOG $self, "  - ".join "\n  - " => @stack;
+            LOG $self, '=============================================================';
         }
 
         $tree_builder->on_completed;
@@ -77,16 +77,16 @@ class Deparser {
 
     method parse_op ($op) {
         if (DEBUG) {
-            say '>>> PARSER ==================================================';
-            say "GOT          : $op";
-            say '-------------------------------------------------------------';
-            say "DEPTH        : ".$op->depth;
-            say "DESCENDANTS? : ".($op->has_descendents ? 'yes' : 'no');
-            say "SIBLING?     : ".($op->has_sibling     ? (sprintf 'yes(%s)', ${ $op->op->sibling }) : 'no');
-            say "-- BEFORE(statmements) --------------------------------------";
-            say join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
-            say "-- BEFORE(stack) --------------------------------------------";
-            say "  - ".join "\n  - " => @stack;
+            LOG $self, '>>> PARSER ==================================================';
+            LOG $self, "GOT          : $op";
+            LOG $self, '-------------------------------------------------------------';
+            LOG $self, "DEPTH        : ".$op->depth;
+            LOG $self, "DESCENDANTS? : ".($op->has_descendents ? 'yes' : 'no');
+            LOG $self, "SIBLING?     : ".($op->has_sibling     ? (sprintf 'yes(%s)', ${ $op->op->sibling }) : 'no');
+            LOG $self, "-- BEFORE(statmements) --------------------------------------";
+            LOG $self, join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
+            LOG $self, "-- BEFORE(stack) --------------------------------------------";
+            LOG $self, "  - ".join "\n  - " => @stack;
         }
 
         my @events;
@@ -128,7 +128,7 @@ class Deparser {
             }
 
             if ($event->op->depth < $stack[-1]->op->depth) {
-                DEBUG && say "We need to unwind the expression";
+                DEBUG && LOG $self, "We need to unwind the expression";
                 push @events => $self->unwind_stack($event);
             }
 
@@ -137,26 +137,26 @@ class Deparser {
         }
 
         if (DEBUG) {
-            say '';
-            say "-- AFTER(statmements) ---------------------------------------";
-            say join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
-            say "-- AFTER(stack) ---------------------------------------------";
-            say "  - ".join "\n  - " => @stack;
-            say "~~ EVENTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
-            say "  - ".join "\n  - " => @events;
-            say '=============================================================';
+            LOG $self, '';
+            LOG $self, "-- AFTER(statmements) ---------------------------------------";
+            LOG $self, join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
+            LOG $self, "-- AFTER(stack) ---------------------------------------------";
+            LOG $self, "  - ".join "\n  - " => @stack;
+            LOG $self, "~~ EVENTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+            LOG $self, "  - ".join "\n  - " => @events;
+            LOG $self, '=============================================================';
         }
 
         return @events;
     }
 
     method unwind_stack ($next) {
-        DEBUG && say '-- Unwind Stack ----------------------------------------';
+        DEBUG && LOG $self, '-- Unwind Stack ----------------------------------------';
         my @events;
 
         while (@stack) {
-            DEBUG && say ">> CANDIDATE: ",$stack[-1];
-            DEBUG && say sprintf '>> curr: %d next(parent): %d',$stack[-1]->op->addr, $next->op->parent->addr;
+            DEBUG && LOG $self, ">> CANDIDATE: ",$stack[-1];
+            DEBUG && LOG $self, sprintf '>> curr: %d next(parent): %d',$stack[-1]->op->addr, $next->op->parent->addr;
 
             last if $stack[-1]->op->addr == $next->op->parent->addr;
 
@@ -168,29 +168,29 @@ class Deparser {
     }
 
     method unwind_events (@events) {
-        DEBUG && say '-- Unwind Events ---------------------------------------';
-        DEBUG && say ">> Got ".(scalar @events)." events to unwind:\n>>  - ".(join "\n>>  - " => @events);
+        DEBUG && LOG $self, '-- Unwind Events ---------------------------------------';
+        DEBUG && LOG $self, ">> Got ".(scalar @events)." events to unwind:\n>>  - ".(join "\n>>  - " => @events);
 
         my @unwound;
         foreach my $event (@events) {
-            DEBUG && say "?? Checking $event";
+            DEBUG && LOG $self, "?? Checking $event";
 
             if ($event isa Deparser::Event::Terminal) {
-                DEBUG && say ".. Got Terminal($event)";
+                DEBUG && LOG $self, ".. Got Terminal($event)";
                 next; # do nothing, the event was already emitted
             }
             elsif ($event isa Deparser::Event::EnterStatementSequence) {
-                DEBUG && say ".. Got EnterStatementSequence($event), dropping statements...";
+                DEBUG && LOG $self, ".. Got EnterStatementSequence($event), dropping statements...";
                 my $drop = pop @statements;
-                DEBUG && say "!! dropping !!",join ', ' => @$drop;
+                DEBUG && LOG $self, "!! dropping !!",join ', ' => @$drop;
             }
 
             push @unwound => $event->create_compliment;
         }
 
-        DEBUG && say ">> Got ".(scalar @unwound)." unwound events:\n>>  - ".(join "\n>>  - " => @unwound);
+        DEBUG && LOG $self, ">> Got ".(scalar @unwound)." unwound events:\n>>  - ".(join "\n>>  - " => @unwound);
 
-        DEBUG && say '--------------------------------------------------------';
+        DEBUG && LOG $self, '--------------------------------------------------------';
         return @unwound;
     }
 

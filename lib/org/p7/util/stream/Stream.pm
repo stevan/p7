@@ -15,6 +15,7 @@ use org::p7::util::function qw[
 ];
 
 use Stream::Operation;
+use Stream::Operation::Buffered;
 use Stream::Operation::Collect;
 use Stream::Operation::Every;
 use Stream::Operation::FlatMap;
@@ -402,6 +403,14 @@ class Stream {
                     f => $f
                 )
             )
+        )
+    }
+
+    method buffered {
+        LOG $self if DEBUG;
+        __CLASS__->new(
+            prev   => $self,
+            source => Stream::Operation::Buffered->new( source => $source )
         )
     }
 

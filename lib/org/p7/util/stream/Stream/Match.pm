@@ -15,7 +15,7 @@ class Stream::Match {
 
     field $was_skipped = false;
 
-    method set_next ($n) { $next = $n }
+    method set_next ($n) { LOG $self if DEBUG; $next = $n }
 
     method has_next {
         LOG $self if DEBUG;
