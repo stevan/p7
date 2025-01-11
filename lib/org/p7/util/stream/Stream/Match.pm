@@ -53,7 +53,7 @@ class Stream::Match {
 
     method match_found ($op) { LOG $self if DEBUG; $on_match ? $on_match->apply($op) : $op }
 
-    method matches ($op) { LOG $self if DEBUG; $predicate->($op) }
+    method matches ($op) { LOG $self if DEBUG; $predicate->test($op) }
 
     method is_match ($op) {
         LOG $self if DEBUG;
@@ -78,5 +78,7 @@ class Stream::Match {
         return false;
     }
 }
+
+
 
 

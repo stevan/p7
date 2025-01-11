@@ -235,8 +235,8 @@ class Stream {
     method match ($matcher) {
         LOG $self if DEBUG;
         execute($self, Stream::Operation::Match->new(
-                matcher  => $source,
-                source   => $self,
+                source  => $source,
+                matcher => $matcher,
             )
         )
     }

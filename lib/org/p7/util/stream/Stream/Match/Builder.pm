@@ -17,12 +17,14 @@ class Stream::Match::Builder {
     field $match_root;
     field $current_match;
 
-    my sub build_match (%opts) {
+    method build_matcher (%opts) {
         $opts{on_match} = Function->new( f => $opts{on_match} )
             unless blessed $opts{on_match};
 
-        return Predicate->new( %opts ) if $opts{predicate};
-        die "Cannot build match, no 'predicate' key present";
+        $opts{predicate} = Predicate->new( f => $opts{predicate} )
+            unless blessed $opts{predicate};
+
+        return Stream::Match->new( %opts );
     }
 
     method build { LOG $self if DEBUG; $match_root }
@@ -31,7 +33,7 @@ class Stream::Match::Builder {
         LOG $self if DEBUG;
         die "Cannot call 'starts_with' twice"
             if defined $match_root;
-        $match_root    = build_match(%opts);
+        $match_root    = $self->build_matcher(%opts);
         $current_match = $match_root;
         $self;
     }
@@ -40,7 +42,7 @@ class Stream::Match::Builder {
         LOG $self if DEBUG;
         die "Cannot call 'followed_by' without calling 'starts_with' first"
             unless defined $current_match;
-        $current_match->set_next( build_match(%opts) );
+        $current_match->set_next( $self->build_matcher(%opts) );
         $current_match = $current_match->next;
         $self;
     }
@@ -49,7 +51,7 @@ class Stream::Match::Builder {
         LOG $self if DEBUG;
         die "Cannot call 'matches_on' without calling 'starts_with' first"
             unless defined $current_match;
-        $current_match->set_next( build_match(%opts) );
+        $current_match->set_next( $self->build_matcher(%opts) );
         $current_match = $current_match->next;
         $self;
     }

@@ -2,6 +2,8 @@
 use v5.40;
 use experimental qw[ class ];
 
+use lib 't/lib';
+
 use Test::More;
 use Test::Differences;
 
@@ -9,8 +11,8 @@ use org::p7::core::compiler qw[ Decompiler ];
 use org::p7::util::stream   qw[ Stream::Collectors ];
 
 package Foo::Bar {
-    #use Foo;
-    #use Bar;
+    use Foo;
+    use Bar;
 
     sub foobar {
         my $foo = Foo::foo(Foo::bar());
