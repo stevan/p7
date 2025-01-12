@@ -56,7 +56,7 @@ class Deparser {
             LOG $self, "-- BEFORE(statmements) --------------------------------------";
             LOG $self, join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
             LOG $self, "-- BEFORE(stack) --------------------------------------------";
-            LOG $self, "  - ".join "\n  - " => @stack;
+            LOG $self, "  - ".$_ foreach @stack;
         }
 
         $tree_builder->on_next($_)
@@ -66,7 +66,7 @@ class Deparser {
             LOG $self, "-- AFTER(statmements) ---------------------------------------";
             LOG $self, join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
             LOG $self, "-- AFTER(stack) ---------------------------------------------";
-            LOG $self, "  - ".join "\n  - " => @stack;
+            LOG $self, "  - ".$_ foreach @stack;
             LOG $self, '=============================================================';
         }
 
@@ -86,7 +86,7 @@ class Deparser {
             LOG $self, "-- BEFORE(statmements) --------------------------------------";
             LOG $self, join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
             LOG $self, "-- BEFORE(stack) --------------------------------------------";
-            LOG $self, "  - ".join "\n  - " => @stack;
+            LOG $self, "  - ".$_ foreach @stack;
         }
 
         my @events;
@@ -141,9 +141,9 @@ class Deparser {
             LOG $self, "-- AFTER(statmements) ---------------------------------------";
             LOG $self, join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
             LOG $self, "-- AFTER(stack) ---------------------------------------------";
-            LOG $self, "  - ".join "\n  - " => @stack;
+            LOG $self, "  - ".$_ foreach @stack;
             LOG $self, "~~ EVENTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
-            LOG $self, "  - ".join "\n  - " => @events;
+            LOG $self, "  - ".$_ foreach @stack;
             LOG $self, '=============================================================';
         }
 

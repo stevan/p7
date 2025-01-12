@@ -33,7 +33,7 @@ class Deparser::Tree::Builder :isa(Deparser::Observer) {
             LOG $self, '== >TREE ==============================';
             LOG $self, "GOT: $e";
             LOG $self, "-- BEFORE -----------------------------";
-            LOG $self, "  - ".join "\n  - " => map $_->node, @stack;
+            LOG $self, "  - ".$_->node foreach @stack;
         }
 
         if ($e isa Deparser::Event::EnterSubroutine        ||
@@ -55,7 +55,7 @@ class Deparser::Tree::Builder :isa(Deparser::Observer) {
 
         if (DEBUG) {
             LOG $self, "-- AFTER ------------------------------";
-            LOG $self, "  - ".join "\n  - " => map $_->node, @stack;
+            LOG $self, "  - ".$_->node foreach @stack;
             LOG $self, '== <TREE ==============================';
         }
     }
