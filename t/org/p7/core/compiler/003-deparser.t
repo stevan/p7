@@ -42,8 +42,6 @@ package Foo::Bar {
     }
 }
 
-#Decompiler->new( from => \&Foo::Bar::foobar )->stream->foreach(\&print_op);
-
 my $stream = Decompiler->new( from => \&Foo::Bar::foobar )->stream;
 my $parser = Deparser->new( stream => $stream );
 my $result = $parser->parse;

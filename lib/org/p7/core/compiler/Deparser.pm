@@ -84,7 +84,7 @@ class Deparser {
             LOG $self, "DESCENDANTS? : ".($op->has_descendents ? 'yes' : 'no');
             LOG $self, "SIBLING?     : ".($op->has_sibling     ? (sprintf 'yes(%s)', ${ $op->op->sibling }) : 'no');
             LOG $self, "-- BEFORE(statmements) --------------------------------------";
-            LOG $self, join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
+            LOG $self, '['.(join ', ' => @$_).']' foreach @statements;
             LOG $self, "-- BEFORE(stack) --------------------------------------------";
             LOG $self, "  - ".$_ foreach @stack;
         }
@@ -139,7 +139,7 @@ class Deparser {
         if (DEBUG) {
             LOG $self, '';
             LOG $self, "-- AFTER(statmements) ---------------------------------------";
-            LOG $self, join ', ' => map { '['.(join ', ' => @$_).']' } @statements;
+            LOG $self, '['.(join ', ' => @$_).']' foreach @statements;
             LOG $self, "-- AFTER(stack) ---------------------------------------------";
             LOG $self, "  - ".$_ foreach @stack;
             LOG $self, "~~ EVENTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
@@ -155,8 +155,11 @@ class Deparser {
         my @events;
 
         while (@stack) {
-            DEBUG && LOG $self, ">> CANDIDATE: ",$stack[-1];
-            DEBUG && LOG $self, sprintf '>> curr: %d next(parent): %d',$stack[-1]->op->addr, $next->op->parent->addr;
+            DEBUG && LOG $self, ">> CANDIDATE: ", { candidate => $stack[-1] };
+            DEBUG && LOG $self, {
+                curr_addr => $stack[-1]->op->addr,
+                next_addr => $next->op->parent->addr
+            };
 
             last if $stack[-1]->op->addr == $next->op->parent->addr;
 
@@ -168,8 +171,11 @@ class Deparser {
     }
 
     method unwind_events (@events) {
-        DEBUG && LOG $self, '-- Unwind Events ---------------------------------------';
-        DEBUG && LOG $self, ">> Got ".(scalar @events)." events to unwind:\n>>  - ".(join "\n>>  - " => @events);
+        if (DEBUG) {
+            LOG $self, '-- Unwind Events ---------------------------------------';
+            LOG $self, ">> Got ".(scalar @events)." events to unwind:";
+            LOG $self, ">>  - ".$_ foreach @events;
+        }
 
         my @unwound;
         foreach my $event (@events) {
@@ -188,9 +194,11 @@ class Deparser {
             push @unwound => $event->create_compliment;
         }
 
-        DEBUG && LOG $self, ">> Got ".(scalar @unwound)." unwound events:\n>>  - ".(join "\n>>  - " => @unwound);
-
-        DEBUG && LOG $self, '--------------------------------------------------------';
+        if (DEBUG) {
+            LOG $self, ">> Got ".(scalar @unwound)." unwound events:";
+            LOG $self, ">>  - ".$_ foreach @unwound;
+            LOG $self, '--------------------------------------------------------';
+        }
         return @unwound;
     }
 
