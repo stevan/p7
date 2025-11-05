@@ -11,6 +11,12 @@ class Flow::Executor {
 
     field @callbacks;
 
+    ADJUST {
+        # Validate $next if provided via constructor
+        # This ensures ALL assignments to $next go through validation
+        $self->set_next($next);
+    }
+
     method set_next ($n) {
         return $next = undef unless defined $n;
 
@@ -63,14 +69,9 @@ class Flow::Executor {
 
     method find_next_undone {
         my $current = $self;
-        my %seen;
 
         while ($current) {
             return $current if $current->remaining > 0;
-
-            my $addr = refaddr($current);
-            return undef if $seen{$addr}++;  # Detect cycle
-
             $current = $current->next;
         }
         return undef;
@@ -79,22 +80,12 @@ class Flow::Executor {
     method run {
         LOG $self if DEBUG;
         my $t = $self;
-        my %seen;
 
         while (blessed $t && $t isa Flow::Executor) {
             LOG $self, "... calling tick", { t => $t } if DEBUG;
-
-            # Detect cycles: if we've seen this executor multiple times and it's done, break
-            my $addr = refaddr($t);
-            if ($seen{$addr}++ > 1 && $t->is_done) {
-                LOG $self, "... detected cycle with no work, terminating" if DEBUG;
-                last;
-            }
-
             $t = $t->tick;
             if (!$t) {
                 LOG $self, "... looking for something to do" if DEBUG;
-                %seen = ();  # Reset cycle detection when traversing chain
                 $t = $self->find_next_undone;
             }
         }
@@ -111,12 +102,8 @@ class Flow::Executor {
     method collect_all {
         my @all;
         my $current = $self;
-        my %seen;
 
         while ($current) {
-            my $addr = refaddr($current);
-            last if $seen{$addr}++;  # Detect cycle
-
             push @all => $current;
             $current = $current->next;
         }

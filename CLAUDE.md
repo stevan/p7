@@ -75,8 +75,14 @@ These wrap subroutine references and provide a consistent interface for stream o
 A reactive streams implementation with:
 - `Flow.pm` - Core reactive flow interface
 - `Flow/Publisher.pm`, `Flow/Subscriber.pm`, `Flow/Subscription.pm` - Reactive streams components
-- `Flow/Executor.pm` - Execution model for async operations
+- `Flow/Executor.pm` - Tick-based event loop for async operations
 - `Flow/Operation/` - Map, Grep operations for flows
+
+**Flow::Executor Safety**: The executor uses construction-time validation to prevent circular chains. An ADJUST block validates all `next` assignments through `set_next()`, which performs cycle detection. This ensures:
+- Circular executor chains cannot exist (validated at construction)
+- No runtime cycle detection overhead in hot paths
+- Clean, simple traversal methods without defensive checks
+- See `EXECUTOR_FIXES_SUMMARY.md` for implementation details
 
 #### 4. IO Streams (`lib/org/p7/io/stream/`)
 
@@ -125,7 +131,9 @@ From NOTES.md:
 ## Development Patterns
 
 - Use `v5.40` and enable `experimental qw[ class ]` in all files
+- Use `experimental qw[ try ]` when exception handling is needed (preferred over eval)
 - Stream operations are chained and lazy - only execute on terminal operations
 - Functional interfaces wrap bare subrefs for consistency
 - All imports should be lexical to avoid namespace pollution
 - Tests are organized to mirror the lib/ directory structure
+- Use ADJUST blocks for post-construction validation when needed
